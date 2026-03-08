@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROPHECY — Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --deep:#1C1C2E;--mid:#2C2C54;--aubergine:#8B6FA0;--gold:#B8975A;
+  --sage:#5A8B7A;--blush:#C4546A;--slate:#4A7AB5;
+  --bg:#F5F4F1;--card:#FFFFFF;--border:#EBEBEB;
+  --text:#1a1a2e;--muted:#6B7280;--faint:#9CA3AF;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#8B6FA033;border-radius:2px}
+
+/* ── Header ── */
+#header{
+  background:var(--deep);padding:0 20px;height:52px;
+  display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:100;border-bottom:1px solid #ffffff08;
+}
+#logo{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;
+  color:#fff;letter-spacing:.2em;border-bottom:1px solid var(--gold);padding-bottom:1px}
+#logo-sub{font-size:9px;color:#ffffff44;letter-spacing:.15em;text-transform:uppercase}
+#countdown{display:flex;align-items:center;gap:7px;
+  background:rgba(184,151,90,.12);border:1px solid rgba(184,151,90,.3);
+  border-radius:5px;padding:3px 10px}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--gold);
+  animation:pulse 2s infinite;box-shadow:0 0 6px var(--gold)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#countdown span{font-size:11px;font-weight:700;color:var(--gold)}
+#spacer{flex:1}
+#view-tabs{display:flex;background:#ffffff0a;border-radius:6px;padding:2px;gap:1px}
+.vtab{padding:4px 11px;border-radius:4px;border:none;background:transparent;
+  color:#ffffff44;font-size:11px;font-weight:600;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .15s}
+.vtab.active{background:#ffffff18;color:#fff}
+#add-btn{padding:6px 14px;border-radius:6px;border:none;
+  background:linear-gradient(135deg,var(--aubergine),var(--mid));
+  color:#fff;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;white-space:nowrap;
+  box-shadow:0 2px 10px rgba(139,111,160,.4)}
+
+/* ── Layout ── */
+#body{display:flex;height:calc(100vh - 52px);overflow:hidden}
+#main{flex:1;overflow-y:auto;padding:18px}
+#sidebar{width:300px;background:var(--card);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+
+/* ── Insight banner ── */
+#insight{background:linear-gradient(135deg,var(--mid),#3d2d5c);
+  border-radius:10px;padding:12px 15px;margin-bottom:16px;
+  display:flex;gap:10px;align-items:flex-start;border:1px solid rgba(139,111,160,.2)}
+#insight-icon{color:var(--gold);font-size:15px;flex-shrink:0;margin-top:2px}
+#insight-label{font-size:9px;font-weight:700;color:var(--gold);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+#insight-text{font-family:'Cormorant Garamond',serif;font-size:15px;
+  color:rgba(255,255,255,.85);line-height:1.55;font-style:italic}
+#insight-refresh{background:none;border:none;color:#ffffff33;cursor:pointer;
+  font-size:13px;margin-left:auto;flex-shrink:0;padding:2px;align-self:flex-start}
+#insight-refresh:hover{color:#ffffff88}
+
+/* ── Calendar header ── */
+#cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+#month-nav{display:flex;align-items:center;gap:8px}
+.nav-arrow{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--card);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.nav-arrow:hover{border-color:var(--aubergine);color:var(--aubergine)}
+#month-label{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;
+  color:var(--text);min-width:190px;text-align:center;letter-spacing:.04em}
+#cat-filters{display:flex;gap:4px;flex-wrap:wrap}
+.cat-pill{padding:3px 8px;border-radius:4px;border:1px solid;font-size:10px;
+  font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+#template-btn{padding:6px 12px;border-radius:6px;border:1.5px solid rgba(139,111,160,.3);
+  background:var(--card);color:var(--aubergine);font-size:11px;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+#template-btn:hover{background:rgba(139,111,160,.08)}
+
+/* ── Calendar grid ── */
+#cal-grid{background:var(--card);border-radius:12px;overflow:hidden;
+  border:1px solid var(--border);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.day-header{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)}
+.day-name{padding:8px 0;text-align:center;font-size:10px;font-weight:700;
+  color:var(--faint);letter-spacing:.1em}
+.cal-cells{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-cell{min-height:95px;padding:5px 4px;border-right:1px solid #f5f5f5;
+  border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;position:relative}
+.cal-cell:hover{background:#faf8ff}
+.cal-cell.empty{background:#fafafa;cursor:default}
+.cell-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;color:var(--muted);margin-bottom:3px}
+.cell-num.today{background:var(--aubergine);color:#fff;font-weight:700}
+.cell-num.has-milestone::after{content:'🏁';font-size:9px;position:absolute;right:4px;top:5px}
+.ev-chip{border-radius:3px;padding:2px 4px;font-size:9px;font-weight:600;
+  margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  cursor:pointer;transition:transform .1s;display:flex;align-items:center;gap:3px}
+.ev-chip:hover{transform:translateX(2px)}
+.more-events{font-size:9px;color:var(--faint);padding-left:3px}
+
+/* ── List view ── */
+.list-item{background:var(--card);border-radius:8px;padding:10px 14px;
+  margin-bottom:4px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  border:1px solid var(--border);transition:all .12s}
+.list-item:hover{border-color:var(--aubergine);box-shadow:0 2px 8px rgba(139,111,160,.1)}
+.list-item.past{opacity:.45}
+.list-date{width:48px;text-align:right;flex-shrink:0}
+.list-date .d{font-size:11px;color:var(--faint)}
+.list-date .t{font-size:12px;font-weight:600;color:var(--text)}
+.list-title{flex:1;font-size:13px;font-weight:600;color:var(--text);min-width:0}
+.list-note{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.list-meta{display:flex;gap:5px;align-items:center;flex-shrink:0}
+
+/* ── Milestones view ── */
+.milestone-track{position:relative;padding-left:22px}
+.milestone-line{position:absolute;left:8px;top:0;bottom:0;width:2px;
+  background:linear-gradient(to bottom,var(--aubergine),var(--gold));border-radius:1px}
+.milestone-item{background:var(--card);border-radius:10px;padding:13px 15px;
+  margin-bottom:10px;border:1px solid var(--border);position:relative}
+.milestone-dot{position:absolute;left:-18px;top:50%;transform:translateY(-50%);
+  width:13px;height:13px;border-radius:50%;border:2.5px solid var(--bg)}
+.milestone-item.urgent{border-color:#fef3c7}
+.milestone-item.done{border-color:#d1fae5}
+.milestone-launch{background:linear-gradient(135deg,var(--mid),var(--aubergine));
+  border-radius:10px;padding:18px;text-align:center;color:#fff}
+
+/* ── Priority dot ── */
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── Chips ── */
+.cat-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;
+  border-radius:3px;font-size:9px;font-weight:700;white-space:nowrap}
+.founder-pip{display:inline-flex;align-items:center;justify-content:center;
+  border-radius:50%;color:#fff;font-weight:700;font-family:'DM Sans',sans-serif;flex-shrink:0}
+
+/* ── Sidebar tabs ── */
+#stabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.stab{flex:1;padding:11px 0;border:none;background:transparent;
+  font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--faint);border-bottom:2px solid transparent;
+  font-family:'DM Sans',sans-serif;transition:all .15s}
+.stab.active{color:var(--aubergine);border-bottom-color:var(--aubergine)}
+#spanel{flex:1;overflow-y:auto;padding:14px}
+.spanel-label{font-size:10px;font-weight:700;color:var(--faint);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+
+/* ── Reminder cards ── */
+.reminder-card{background:#faf8ff;border-radius:8px;padding:10px 12px;
+  margin-bottom:8px;border:1px solid rgba(139,111,160,.15);
+  border-left:2.5px solid var(--aubergine)}
+.reminder-card.urgent{background:#fff8f0;border-left-color:var(--gold);border-color:rgba(184,151,90,.2)}
+.reminder-card.overdue{background:#fff5f5;border-left-color:var(--blush);border-color:rgba(196,84,106,.2)}
+.reminder-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
+.reminder-reason{font-family:'Cormorant Garamond',serif;font-size:13px;
+  color:var(--aubergine);font-style:italic;margin-bottom:5px;line-height:1.4}
+.reminder-card.urgent .reminder-reason{color:#9a7020}
+.reminder-card.overdue .reminder-reason{color:var(--blush)}
+.reminder-meta{font-size:10px;color:var(--faint)}
+.reminder-actions{display:flex;gap:5px;margin-top:7px}
+.r-btn{padding:3px 9px;border-radius:5px;border:none;font-size:10px;
+  font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.r-btn.primary{background:var(--aubergine);color:#fff}
+.r-btn.secondary{background:var(--border);color:var(--muted)}
+.r-btn.primary:hover{opacity:.85}.r-btn.secondary:hover{background:#e0e0e0}
+
+/* ── AI Suggest (now context-aware reminders) ── */
+.suggest-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px}
+.smode-btn{padding:8px;border-radius:7px;border:1.5px solid var(--border);
+  background:#fafafa;color:var(--muted);font-size:10px;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;line-height:1.3;transition:all .12s}
+.smode-btn.active{border-color:var(--aubergine);background:rgba(139,111,160,.08);color:var(--aubergine)}
+.suggest-input{width:100%;background:#fafafa;border:1.5px solid var(--border);
+  border-radius:7px;color:var(--text);font-size:11px;padding:8px 10px;
+  font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.5;margin-bottom:8px}
+.suggest-input:focus{border-color:var(--aubergine)}
+.gen-btn{width:100%;padding:9px;border-radius:7px;border:none;
+  background:linear-gradient(135deg,var(--aubergine),var(--mid));
+  color:#fff;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;margin-bottom:14px}
+.gen-btn:disabled{background:#f0f0f5;color:var(--faint);cursor:default}
+
+/* ── Upcoming ── */
+.up-item{background:#fafafa;border-radius:7px;padding:8px 10px;margin-bottom:5px;
+  cursor:pointer;border:1px solid var(--border);transition:all .12s}
+.up-item:hover{border-color:var(--aubergine)}
+.up-days{font-size:9px;font-weight:700;white-space:nowrap}
+
+/* ── Team ── */
+.team-founder{margin-bottom:16px}
+.team-header{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.team-count{margin-left:auto;font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:10px}
+.team-ev{font-size:11px;color:var(--text);padding:4px 7px;border-radius:5px;
+  background:#fafafa;margin-bottom:3px;cursor:pointer;border-left:2px solid var(--border);transition:all .12s}
+.team-ev:hover{border-left-color:var(--aubergine)}
+
+/* ── Modal ── */
+#modal-overlay{position:fixed;inset:0;background:rgba(10,8,20,.65);
+  backdrop-filter:blur(5px);z-index:200;display:none;align-items:center;
+  justify-content:center;padding:16px}
+#modal-overlay.open{display:flex}
+#modal{background:#fff;border-radius:16px;padding:26px;width:480px;max-width:95vw;
+  max-height:90vh;overflow-y:auto;box-shadow:0 25px 80px rgba(0,0,0,.3)}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px}
+.modal-close{background:none;border:none;font-size:17px;cursor:pointer;color:var(--faint);padding:3px}
+.modal-close:hover{color:var(--text)}
+.form-label{display:block;font-size:10px;font-weight:700;color:var(--faint);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;margin-top:13px}
+.form-input{width:100%;padding:9px 11px;border-radius:7px;border:1.5px solid var(--border);
+  font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;
+  box-sizing:border-box;outline:none;transition:border-color .12s}
+.form-input:focus{border-color:var(--aubergine)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.cat-opt{padding:7px 9px;border-radius:6px;border:1.5px solid var(--border);
+  text-align:left;font-size:11px;font-weight:600;cursor:pointer;
+  font-family:'DM Sans',sans-serif;background:#fafafa;transition:all .12s}
+.founder-opts{display:flex;gap:7px}
+.founder-opt{flex:1;display:flex;align-items:center;gap:5px;padding:7px 9px;
+  border-radius:7px;border:1.5px solid var(--border);background:#fafafa;
+  font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.priority-opts{display:flex;gap:7px}
+.pri-opt{flex:1;padding:6px;border-radius:6px;border:1.5px solid var(--border);
+  background:#fafafa;font-size:11px;font-weight:700;cursor:pointer;
+  text-transform:capitalize;font-family:'DM Sans',sans-serif;text-align:center;transition:all .12s}
+.modal-actions{display:flex;justify-content:space-between;margin-top:20px;gap:8px}
+.modal-del{padding:8px 14px;border-radius:7px;border:1.5px solid #fee2e2;
+  background:#fff;color:#ef4444;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.modal-cancel{padding:8px 14px;border-radius:7px;border:1.5px solid var(--border);
+  background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.modal-save{padding:8px 20px;border-radius:7px;border:none;
+  background:linear-gradient(135deg,var(--mid),var(--aubergine));
+  color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.modal-save:disabled{background:#f0f0f5;color:var(--faint);cursor:default}
+
+/* ── Template modal ── */
+#tmpl-overlay{position:fixed;inset:0;background:rgba(10,8,20,.6);
+  backdrop-filter:blur(4px);z-index:201;display:none;align-items:center;
+  justify-content:center;padding:16px}
+#tmpl-overlay.open{display:flex}
+#tmpl-modal{background:#fff;border-radius:14px;padding:24px;width:460px;
+  max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.tmpl-card{background:#fafafa;border-radius:9px;padding:13px 15px;margin-bottom:10px;border:1.5px solid var(--border)}
+.tmpl-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.tmpl-desc{font-size:11px;color:var(--muted);margin-bottom:9px}
+.tmpl-ev{font-size:11px;color:var(--text);padding:2px 0;display:flex;align-items:center;gap:6px}
+.tmpl-apply{padding:6px 14px;border-radius:6px;border:none;margin-top:9px;
+  background:linear-gradient(135deg,var(--aubergine),var(--mid));
+  color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  #sidebar{display:none}
+  #cal-header{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <div>
+    <div id="logo">PROPHECY</div>
+  </div>
+  <div id="logo-sub">Command</div>
+  <div id="countdown">
+    <div class="pulse"></div>
+    <span id="countdown-text">— days to launch</span>
+  </div>
+  <div id="spacer"></div>
+  <div style="display:flex;gap:5px;align-items:center" id="founder-filters">
+    <span style="font-size:10px;color:#ffffff33;margin-right:2px">View:</span>
+  </div>
+  <div id="view-tabs">
+    <button class="vtab active" onclick="setView('month')">Month</button>
+    <button class="vtab" onclick="setView('list')">List</button>
+    <button class="vtab" onclick="setView('milestones')">Launch</button>
+  </div>
+  <button id="add-btn" onclick="openModal(null)">+ Event</button>
+</div>
+
+<!-- Body -->
+<div id="body">
+  <!-- Main -->
+  <div id="main">
+    <!-- Insight -->
+    <div id="insight">
+      <div id="insight-icon">✦</div>
+      <div style="flex:1">
+        <div id="insight-label">This Week · Strategic Focus</div>
+        <div id="insight-text">Loading your weekly focus...</div>
+      </div>
+      <button id="insight-refresh" onclick="loadInsight()" title="Refresh">↺</button>
+    </div>
+    <div id="view-container"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div id="stabs">
+      <button class="stab active" onclick="setPanel('remind')">🔔 Reminders</button>
+      <button class="stab" onclick="setPanel('upcoming')">Upcoming</button>
+      <button class="stab" onclick="setPanel('team')">Team</button>
+    </div>
+    <div id="spanel"></div>
+  </div>
+</div>
+
+<!-- Event Modal -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div id="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div class="modal-title" id="modal-title">New Event</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <label class="form-label">Title</label>
+    <input class="form-input" id="f-title" placeholder="What's happening?">
+    <div class="form-grid">
+      <div><label class="form-label">Date</label><input type="date" class="form-input" id="f-date"></div>
+      <div><label class="form-label">Time</label><input type="time" class="form-input" id="f-time"></div>
+    </div>
+    <label class="form-label">Category</label>
+    <div class="cat-grid" id="f-cats"></div>
+    <label class="form-label">Owners</label>
+    <div class="founder-opts" id="f-owners"></div>
+    <label class="form-label">Priority</label>
+    <div class="priority-opts" id="f-priority"></div>
+    <label class="form-label">Notes</label>
+    <textarea class="form-input" id="f-notes" rows="3" placeholder="What needs to happen? What decisions?"></textarea>
+    <label class="form-label">Recurring</label>
+    <select class="form-input" id="f-recurring">
+      <option value="">One-time</option>
+      <option value="weekly">Weekly</option>
+      <option value="biweekly">Bi-weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
+    <div class="modal-actions">
+      <div><button class="modal-del" id="modal-del-btn" onclick="deleteEvent()" style="display:none">Delete</button></div>
+      <div style="display:flex;gap:7px">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-save" id="modal-save-btn" onclick="saveEvent()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Template Modal -->
+<div id="tmpl-overlay" onclick="if(event.target===this)closeTmpl()">
+  <div id="tmpl-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="font-size:16px;font-weight:700;color:var(--text);font-family:'DM Sans',sans-serif">Weekly Templates</div>
+      <button class="modal-close" onclick="closeTmpl()">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;font-family:'DM Sans',sans-serif">
+      Apply a pre-built week starting next Monday.
+    </p>
+    <div id="tmpl-list"></div>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const FOUNDERS = [
+  {id:'sharp',name:'Sharp',role:'Finance · Ops · Strategy',color:'#B8975A'},
+  {id:'guy',  name:'Guy',  role:'Creative · Design',       color:'#8B6FA0'},
+  {id:'pom',  name:'Pom',  role:'Production · Technical',  color:'#5A8B7A'},
+];
+const CATS = [
+  {id:'collection', label:'Collection',  icon:'◈', color:'#8B6FA0'},
+  {id:'production', label:'Production',  icon:'✂', color:'#5A8B7A'},
+  {id:'digital',    label:'Website',     icon:'◻', color:'#4A7AB5'},
+  {id:'finance',    label:'Finance',     icon:'◉', color:'#B8975A'},
+  {id:'brand',      label:'Brand & Mktg',icon:'✦', color:'#C4546A'},
+  {id:'ops',        label:'Operations',  icon:'⊕', color:'#6B7280'},
+  {id:'strategy',   label:'Strategy',    icon:'▲', color:'#2C2C54'},
+];
+const MILESTONES = [
+  {id:'m1',label:'Product Range Locked',    target:'2026-04-01',category:'collection',owners:['sharp','guy','pom']},
+  {id:'m2',label:'Final Samples Approved',  target:'2026-04-30',category:'production',owners:['pom','guy']},
+  {id:'m3',label:'Website Live (Staging)',  target:'2026-05-15',category:'digital',   owners:['sharp','guy']},
+  {id:'m4',label:'Photography / Editorial', target:'2026-05-30',category:'brand',     owners:['guy','sharp']},
+  {id:'m5',label:'Inventory Received',      target:'2026-06-15',category:'production',owners:['pom','sharp']},
+  {id:'m6',label:'LAUNCH',                  target:'2026-07-01',category:'strategy',  owners:['sharp','guy','pom']},
+];
+const TEMPLATES = [
+  {id:'t1',label:'Full Founder Week',desc:'All three synced — design + production + finance',events:[
+    {title:'Monday Finance & Cash Review',time:'09:00',category:'finance',owners:['sharp'],notes:'Log transactions, check runway',dayOffset:0},
+    {title:'Midweek Design Review',time:'14:00',category:'collection',owners:['sharp','guy'],notes:'Collection progress, range decisions',dayOffset:1},
+    {title:'Production Stand-up',time:'11:00',category:'production',owners:['pom','sharp'],notes:'Sample status, fabric, timeline',dayOffset:2},
+    {title:'Website Work Block',time:'10:00',category:'digital',owners:['sharp'],notes:'3hr uninterrupted website tasks',dayOffset:3},
+    {title:'Friday Founders Sync',time:'15:00',category:'strategy',owners:['sharp','guy','pom'],notes:'Week wrap — what moved, what\'s blocked',dayOffset:4},
+  ]},
+  {id:'t2',label:'Pre-Launch Sprint Week',desc:'Heavy execution — production + digital focus',events:[
+    {title:'Production Morning',time:'09:00',category:'production',owners:['pom','sharp'],notes:'Pom leads, Sharp on decisions',dayOffset:0},
+    {title:'Website Build Block',time:'13:00',category:'digital',owners:['sharp'],notes:'Deep work — no interruptions',dayOffset:0},
+    {title:'Content Planning',time:'10:00',category:'brand',owners:['guy','sharp'],notes:'Editorial direction, photography brief',dayOffset:1},
+    {title:'Customer Acquisition Research',time:'14:00',category:'brand',owners:['sharp'],notes:'Luxury e-comm cold start strategies',dayOffset:2},
+    {title:'Cash & Supplier Review',time:'09:30',category:'finance',owners:['sharp'],notes:'Burn rate, upcoming payments',dayOffset:3},
+    {title:'Founders End-of-Week',time:'16:00',category:'strategy',owners:['sharp','guy','pom'],notes:'Quick sync',dayOffset:4},
+  ]},
+];
+const SEED_EVENTS = [
+  {id:'s1',title:'Sample Review — First Fits',date:'2026-03-10',time:'10:00',category:'production',owners:['pom','guy','sharp'],notes:'Assess first real-fabric samples. Fit, fabric behaviour, construction.',priority:'high'},
+  {id:'s2',title:'Range Planning Session',date:'2026-03-12',time:'14:00',category:'collection',owners:['sharp','guy'],notes:'How many SKUs for drop 1? Which silhouettes? Price architecture.',priority:'high'},
+  {id:'s3',title:'Website Platform Decision',date:'2026-03-13',time:'11:00',category:'digital',owners:['sharp'],notes:'Shopify vs Squarespace — make the call.',priority:'high'},
+  {id:'s4',title:'Founders Weekly Sync',date:'2026-03-14',time:'15:00',category:'strategy',owners:['sharp','guy','pom'],notes:'15-min standing sync.',recurring:'weekly',priority:'medium'},
+  {id:'s5',title:'Cash Runway Review',date:'2026-03-16',time:'09:00',category:'finance',owners:['sharp'],notes:'Update Excel. How many weeks until we need revenue?',recurring:'weekly',priority:'high'},
+  {id:'s6',title:'Customer Acquisition Strategy',date:'2026-03-18',time:'14:00',category:'brand',owners:['sharp','guy'],notes:'Luxury e-comm cold start — editorial seeding, pre-launch list building.',priority:'high'},
+  {id:'s7',title:'Fabric & Supplier Audit',date:'2026-03-19',time:'11:00',category:'production',owners:['pom','sharp'],notes:'Confirm fabric commitments, lead times, deposit schedule.',priority:'medium'},
+  {id:'s8',title:'Pricing Architecture Review',date:'2026-03-23',time:'10:00',category:'finance',owners:['sharp','guy'],notes:'Set final retail prices. Validate against luxury positioning.',priority:'high'},
+];
+const PROPHECY_CONTEXT = `Prophecy is a luxury womenswear label in Bangkok. Pre-launch, targeting Q2-Q3 2026. E-commerce only.
+Sharp = Finance/Ops/Strategy. Guy = Creative/Design. Pom = Production/Technical.
+First real-fabric samples in hand. Open questions: range finalisation, website build, customer acquisition for luxury cold start, cash management.
+Cash is tight — negative as of Feb 2026. Launch milestone: July 1 2026.`;
+
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let events = [...SEED_EVENTS];
+let viewMonth = new Date().getMonth();
+let viewYear  = new Date().getFullYear();
+let currentView = 'month';
+let currentPanel = 'remind';
+let filterOwner = null;
+let filterCat   = null;
+let editingId   = null;
+let formOwners  = ['sharp'];
+let formCat     = 'strategy';
+let formPriority= 'medium';
+let suggestMode = 'overdue';
+let lastReminders = [];
+
+// ── Persistence ───────────────────────────────────────────────────────────────
+function save(){try{localStorage.setItem('prophecy_cmd_v3',JSON.stringify(events))}catch{}}
+function load(){try{const d=localStorage.getItem('prophecy_cmd_v3');if(d)events=JSON.parse(d)}catch{}}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const today = () => new Date().toISOString().slice(0,10);
+const daysUntil = d => Math.ceil((new Date(d)-new Date(today()))/86400000);
+const addDays = (d,n) => {const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt.toISOString().slice(0,10)};
+const nextMonday = () => {const d=new Date();const day=d.getDay();d.setDate(d.getDate()+(day===0?1:8-day));return d.toISOString().slice(0,10)};
+const catById = id => CATS.find(c=>c.id===id)||CATS[0];
+const founderById = id => FOUNDERS.find(f=>f.id===id);
+const daysInMonth = (y,m) => new Date(y,m+1,0).getDate();
+const firstDayOf  = (y,m) => new Date(y,m,1).getDay();
+
+function pip(id,size=18){
+  const f=founderById(id);if(!f)return '';
+  return `<span class="founder-pip" style="width:${size}px;height:${size}px;font-size:${size*.42}px;background:${f.color}" title="${f.name}">${f.name[0]}</span>`;
+}
+function catBadge(id,small){
+  const c=catById(id);
+  return `<span class="cat-badge" style="background:${c.color}18;color:${c.color};font-size:${small?8:9}px">${c.icon} ${c.label}</span>`;
+}
+function pdot(p){
+  const cols={high:'#C4546A',medium:'#B8975A',low:'#9CA3AF'};
+  return `<span class="pdot" style="background:${cols[p]||cols.medium}"></span>`;
+}
+function filt(e){
+  if(filterOwner&&!e.owners?.includes(filterOwner))return false;
+  if(filterCat&&e.category!==filterCat)return false;
+  return true;
+}
+
+// ── AI call ───────────────────────────────────────────────────────────────────
+async function callAI(prompt){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+      messages:[{role:'user',content:prompt}]})
+  });
+  const d=await r.json();
+  return d.content?.[0]?.text||'';
+}
+
+// ── Countdown ─────────────────────────────────────────────────────────────────
+function updateCountdown(){
+  const d=daysUntil('2026-07-01');
+  document.getElementById('countdown-text').textContent=
+    d>0?`${d} days to launch`:'LAUNCH WEEK';
+}
+
+// ── Insight ───────────────────────────────────────────────────────────────────
+async function loadInsight(){
+  const el=document.getElementById('insight-text');
+  el.textContent='Thinking...';
+  const upcoming=events.filter(e=>e.date>=today()).slice(0,5)
+    .map(e=>`- ${e.date}: ${e.title}`).join('\n');
+  try{
+    const t=await callAI(`${PROPHECY_CONTEXT}\nUpcoming:\n${upcoming}\n\nGive Sharp ONE sharp, specific piece of strategic advice for this week. Max 2 sentences. Direct, no fluff. Think luxury fashion consultant who knows Bangkok market.`);
+    el.textContent=t;
+  }catch{el.textContent='Connect to the internet to load your weekly focus.';}
+}
+
+// ── Smart Reminders (the new suggest mode) ────────────────────────────────────
+async function loadReminders(){
+  const panel=document.getElementById('spanel');
+  if(currentPanel!=='remind')return;
+  panel.innerHTML=`<div class="spanel-label">Smart Reminders</div>
+  <div class="suggest-mode-grid">
+    <button class="smode-btn ${suggestMode==='overdue'?'active':''}" onclick="setSuggestMode('overdue')">⚠ Overdue / At Risk</button>
+    <button class="smode-btn ${suggestMode==='thisweek'?'active':''}" onclick="setSuggestMode('thisweek')">📅 This Week</button>
+    <button class="smode-btn ${suggestMode==='milestones'?'active':''}" onclick="setSuggestMode('milestones')">🏁 Milestone Gaps</button>
+    <button class="smode-btn ${suggestMode==='guy'?'active':''}" onclick="setSuggestMode('guy')">For Guy</button>
+    <button class="smode-btn ${suggestMode==='pom'?'active':''}" onclick="setSuggestMode('pom')">For Pom</button>
+  </div>
+  <textarea class="suggest-input" id="remind-context" rows="2" placeholder="Optional: add context e.g. 'sample revisions came back yesterday'"></textarea>
+  <button class="gen-btn" id="remind-btn" onclick="generateReminders()">🔔 Generate Reminders</button>
+  <div id="remind-results"></div>`;
+}
+
+function setSuggestMode(m){suggestMode=m;loadReminders();}
+
+async function generateReminders(){
+  const btn=document.getElementById('remind-btn');
+  const results=document.getElementById('remind-results');
+  const ctx=document.getElementById('remind-context')?.value||'';
+  btn.disabled=true;btn.textContent='Checking...';
+  results.innerHTML='';
+
+  const upcomingEvs=events.filter(e=>e.date>=today())
+    .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,12)
+    .map(e=>`- ${e.date} ${e.time}: ${e.title} [${e.category}] owners:${(e.owners||[]).join(',')} priority:${e.priority||'medium'}`).join('\n');
+  const overdueEvs=events.filter(e=>e.date<today())
+    .map(e=>`- ${e.date}: ${e.title} [${e.category}]`).join('\n');
+  const modePrompts={
+    overdue:`Look at the overdue/past events and upcoming schedule. Identify 4 things that are at risk of falling behind or haven't been followed up on. Focus on: things that were scheduled but may not have happened, decisions that are blocking others, and gaps that will hurt the launch timeline.`,
+    thisweek:`Based on the calendar and Prophecy's stage, what are the 4 most important things Sharp needs to do or check on THIS week? Be specific — reference actual events where possible.`,
+    milestones:`The launch milestones are: Range Locked (Apr 1), Samples Approved (Apr 30), Website Staging (May 15), Photography (May 30), Inventory (Jun 15), Launch (Jul 1). Given today's date and the current calendar, what are the 4 most urgent gaps or risks to hitting these milestones?`,
+    guy:`What does Guy need to be reminded about or nudged on this week? Focus on his creative/design responsibilities. Are there decisions he needs to make, things he said he'd do, or creative work that's blocking other areas?`,
+    pom:`What does Pom need to be reminded about or nudged on this week? Focus on production and technical responsibilities. Sample revisions, fabric decisions, pattern issues, construction details — what needs attention?`,
+  };
+
+  const prompt=`${PROPHECY_CONTEXT}
+Calendar (upcoming events):
+${upcomingEvs||'None scheduled yet'}
+Past/overdue events:
+${overdueEvs||'None'}
+Context from Sharp: "${ctx}"
+${modePrompts[suggestMode]||modePrompts.thisweek}
+Respond ONLY as a JSON array. No markdown. Each reminder:
+{"title":"short action title","reason":"one specific sentence on WHY this needs attention NOW — reference real context from the calendar or launch timeline","urgency":"overdue|urgent|normal","owner":"sharp|guy|pom|team","action":"what specifically to do"}`;
+
+  try{
+    const text=await callAI(prompt);
+    const clean=text.replace(/\`\`\`json|\`\`\`/g,'').trim();
+    const start=clean.indexOf('['),end=clean.lastIndexOf(']');
+    const reminders=JSON.parse(clean.slice(start,end+1));
+    lastReminders=reminders;
+    results.innerHTML=reminders.map((r,i)=>{
+      const urgClass=r.urgency==='overdue'?'overdue':r.urgency==='urgent'?'urgent':'';
+      const ownerF=founderById(r.owner)||{color:'#6B7280',name:'Team'};
+      return `<div class="reminder-card ${urgClass}">
+        <div class="reminder-title">${r.title}</div>
+        <div class="reminder-reason">${r.reason}</div>
+        <div class="reminder-meta" style="margin-bottom:5px">
+          ${pip(r.owner,14)} <span style="color:${ownerF.color};font-weight:600;font-size:10px">${r.owner==='team'?'All founders':ownerF.name}</span>
+        </div>
+        <div style="font-size:10px;color:#6B7280;background:#f9f9f9;border-radius:5px;padding:5px 7px;margin-bottom:5px">${r.action}</div>
+        <div class="reminder-actions">
+          <button class="r-btn primary" onclick="addReminderAsEvent(${i})">+ Add to Calendar</button>
+          <button class="r-btn secondary" onclick="this.closest('.reminder-card').style.opacity='.3'">Dismiss</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    results.innerHTML='<div style="font-size:12px;color:#9CA3AF;text-align:center;padding:16px">Could not load reminders.<br>Check your connection.</div>';
+  }
+  btn.disabled=false;btn.textContent='🔔 Generate Reminders';
+}
+
+function addReminderAsEvent(i){
+  const r=lastReminders[i];if(!r)return;
+  const nextDate=addDays(today(),1);
+  openModal({
+    id:'e'+Date.now(),title:r.title,date:nextDate,time:'10:00',
+    category:'strategy',owners:r.owner==='team'?['sharp','guy','pom']:[r.owner]||['sharp'],
+    notes:r.action,priority:r.urgency==='overdue'?'high':r.urgency==='urgent'?'high':'medium'
+  });
+}
+
+// ── Panels ────────────────────────────────────────────────────────────────────
+function setPanel(p){
+  currentPanel=p;
+  document.querySelectorAll('.stab').forEach((t,i)=>{
+    t.classList.toggle('active',['remind','upcoming','team'][i]===p);
+  });
+  renderPanel();
+}
+
+function renderPanel(){
+  const panel=document.getElementById('spanel');
+  const todayStr=today();
+  if(currentPanel==='remind'){loadReminders();return;}
+  if(currentPanel==='upcoming'){
+    const up=[...events].filter(e=>filt(e)&&e.date>=todayStr)
+      .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,10);
+    panel.innerHTML=`<div class="spanel-label">Next ${up.length} Events</div>`+
+      (up.length===0?'<div style="color:var(--faint);font-size:13px;text-align:center;padding:20px">Nothing scheduled.</div>':
+      up.map(e=>{
+        const c=catById(e.category);const d=daysUntil(e.date);
+        return `<div class="up-item" onclick="openModal(getEvent('${e.id}'))" style="border-left:2px solid ${c.color}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:5px">
+            <div style="font-size:12px;font-weight:600;color:var(--text);flex:1;line-height:1.3">${e.title}</div>
+            <span class="up-days" style="color:${d===0?'#C4546A':d<=2?'#B8975A':'var(--faint)'}">${d===0?'TODAY':d===1?'TMR':'+'+d+'d'}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
+            <span style="font-size:9px;color:var(--faint)">${e.date.slice(5)} ${e.time}</span>
+            ${catBadge(e.category,true)}
+            ${(e.owners||[]).map(o=>pip(o,13)).join('')}
+          </div>
+        </div>`;
+      }).join(''));
+    return;
+  }
+  if(currentPanel==='team'){
+    panel.innerHTML=FOUNDERS.map(f=>{
+      const fe=events.filter(e=>(e.owners||[]).includes(f.id)&&e.date>=todayStr)
+        .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+      return `<div class="team-founder">
+        <div class="team-header">
+          ${pip(f.id,26)}
+          <div><div style="font-size:13px;font-weight:700;color:var(--text)">${f.name}</div>
+          <div style="font-size:10px;color:var(--faint)">${f.role}</div></div>
+          <span class="team-count" style="background:${f.color}18;color:${f.color}">${fe.length} upcoming</span>
+        </div>
+        ${fe.slice(0,3).map(e=>`<div class="team-ev" onclick="openModal(getEvent('${e.id}'))" style="border-left-color:${catById(e.category).color}">
+          <span style="color:var(--faint);margin-right:4px">${e.date.slice(5)}</span>${e.title}
+        </div>`).join('')}
+        ${fe.length>3?`<div style="font-size:10px;color:var(--faint);padding-left:7px">+${fe.length-3} more</div>`:''}
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── Calendar rendering ────────────────────────────────────────────────────────
+function render(){
+  updateCountdown();
+  renderFounderFilters();
+  renderCatFilter();
+  if(currentView==='month') renderMonth();
+  else if(currentView==='list') renderList();
+  else renderMilestones();
+  renderPanel();
+}
+
+function renderFounderFilters(){
+  const c=document.getElementById('founder-filters');
+  c.innerHTML=`<span style="font-size:10px;color:#ffffff33;margin-right:2px">View:</span>
+  <button onclick="filterOwner=null;render()" style="padding:4px 9px;border-radius:20px;border:1px solid ${!filterOwner?'#ffffff55':'#ffffff1a'};background:${!filterOwner?'#ffffff18':'transparent'};color:${!filterOwner?'#fff':'#ffffff44'};font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">All</button>`+
+  FOUNDERS.map(f=>`<button onclick="filterOwner='${f.id}';render()" style="display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;border:1px solid ${filterOwner===f.id?f.color+'88':'#ffffff1a'};background:${filterOwner===f.id?f.color+'22':'transparent'};color:${filterOwner===f.id?f.color:'#ffffff44'};font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">${pip(f.id,14)}${f.name}</button>`).join('');
+}
+
+function renderCatFilter(){
+  const existing=document.getElementById('cat-filter-row');
+  if(existing)existing.remove();
+}
+
+function renderMonth(){
+  const cont=document.getElementById('view-container');
+  const numD=daysInMonth(viewYear,viewMonth);
+  const firstD=firstDayOf(viewYear,viewMonth);
+  const cells=[...Array(firstD).fill(null),...Array.from({length:numD},(_,i)=>i+1)];
+  const filtEvs=events.filter(filt);
+
+  cont.innerHTML=`
+  <div id="cal-header">
+    <div id="month-nav">
+      <button class="nav-arrow" onclick="prevMonth()">‹</button>
+      <div id="month-label">${MONTHS[viewMonth]} ${viewYear}</div>
+      <button class="nav-arrow" onclick="nextMonth()">›</button>
+    </div>
+    <div id="cat-filters">${CATS.map(c=>`<button class="cat-pill" onclick="toggleCat('${c.id}')" style="border-color:${filterCat===c.id?c.color:c.color+'44'};background:${filterCat===c.id?c.color+'18':'transparent'};color:${filterCat===c.id?c.color:c.color+'99'}">${c.icon} ${c.label}</button>`).join('')}</div>
+    <button id="template-btn" onclick="openTmpl()">⊕ Apply Template</button>
+  </div>
+  <div id="cal-grid">
+    <div class="day-header">${DAYS.map(d=>`<div class="day-name">${d}</div>`).join('')}</div>
+    <div class="cal-cells">${cells.map((day,i)=>{
+      if(!day)return `<div class="cal-cell empty"></div>`;
+      const ds=`${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const de=filtEvs.filter(e=>e.date===ds);
+      const isT=ds===today();
+      const isMil=MILESTONES.some(m=>m.target===ds);
+      return `<div class="cal-cell" onclick="handleCellClick('${ds}',event)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+          <span class="cell-num ${isT?'today':''}">${day}</span>
+          ${isMil?'<span style="font-size:10px">🏁</span>':''}
+        </div>
+        ${de.slice(0,3).map(e=>{const c=catById(e.category);return`<div class="ev-chip" onclick="event.stopPropagation();openModal(getEvent('${e.id}'))" style="background:${c.color}15;color:${c.color};border-left:2px solid ${c.color}">${e.priority==='high'?'•':''} ${e.title}</div>`;}).join('')}
+        ${de.length>3?`<div class="more-events">+${de.length-3} more</div>`:''}
+      </div>`;
+    }).join('')}</div>
+  </div>`;
+}
+
+function renderList(){
+  const sorted=[...events.filter(filt)].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const todayStr=today();
+  document.getElementById('view-container').innerHTML=
+    `<h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:12px">All Events</h2>`+
+    (sorted.length===0?'<div style="color:var(--faint);text-align:center;padding:40px">No events.</div>':
+    sorted.map(e=>{
+      const c=catById(e.category);const past=e.date<todayStr;
+      return `<div class="list-item ${past?'past':''}" onclick="openModal(getEvent('${e.id}'))">
+        <div class="list-date"><div class="d">${e.date.slice(5)}</div><div class="t">${e.time}</div></div>
+        ${pdot(e.priority||'medium')}
+        <div style="flex:1;min-width:0">
+          <div class="list-title">${e.title}</div>
+          ${e.notes?`<div class="list-note">${e.notes}</div>`:''}
+        </div>
+        <div class="list-meta">
+          ${catBadge(e.category)}
+          ${(e.owners||[]).map(o=>pip(o,18)).join('')}
+          ${e.recurring?'<span style="font-size:10px;color:var(--faint)">↺</span>':''}
+        </div>
+      </div>`;
+    }).join(''));
+}
+
+function renderMilestones(){
+  const todayStr=today();
+  document.getElementById('view-container').innerHTML=
+    `<h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:16px">Launch Roadmap · July 2026</h2>
+    <div class="milestone-track">
+      <div class="milestone-line"></div>
+      ${MILESTONES.map(m=>{
+        const d=daysUntil(m.target);const done=d<0;const urgent=d>=0&&d<=14;
+        const c=catById(m.category);
+        return `<div class="milestone-item ${done?'done':urgent?'urgent':''}">
+          <div class="milestone-dot" style="background:${done?'#10b981':urgent?'#f59e0b':c.color}"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px">${m.label}</div>
+              <div style="display:flex;gap:5px;align-items:center">
+                <span style="font-size:11px;color:var(--muted)">${m.target}</span>
+                ${catBadge(m.category,true)}
+                ${m.owners.map(o=>pip(o,15)).join('')}
+              </div>
+            </div>
+            <div style="text-align:right">
+              ${done?`<span style="font-size:12px;font-weight:700;color:#10b981">✓ Done</span>`:
+              `<div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:${urgent?'#f59e0b':'var(--text)'}">${d}</div>
+               <div style="font-size:9px;color:var(--faint)">days away</div>`}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+      <div class="milestone-launch">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:.1em">LAUNCH</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin:3px 0">July 2026 · Prophecy goes live</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600">${Math.max(0,daysUntil('2026-07-01'))}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">days remaining</div>
+      </div>
+    </div>`;
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function setView(v){
+  currentView=v;
+  document.querySelectorAll('.vtab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.vtab').forEach((t,i)=>{if(['month','list','milestones'][i]===v)t.classList.add('active')});
+  render();
+}
+function prevMonth(){if(viewMonth===0){viewMonth=11;viewYear--}else viewMonth--;render();}
+function nextMonth(){if(viewMonth===11){viewMonth=0;viewYear++}else viewMonth++;render();}
+function toggleCat(id){filterCat=filterCat===id?null:id;render();}
+function handleCellClick(ds,e){
+  if(e.target.closest('.ev-chip'))return;
+  openModal({date:ds,time:'10:00',owners:['sharp'],category:'strategy',priority:'medium'});
+}
+function getEvent(id){return events.find(e=>e.id===id)||null;}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(ev){
+  editingId=ev?.id||null;
+  formOwners=[...( ev?.owners||['sharp'])];
+  formCat=ev?.category||'strategy';
+  formPriority=ev?.priority||'medium';
+  document.getElementById('modal-title').textContent=editingId?'Edit Event':'New Event';
+  document.getElementById('f-title').value=ev?.title||'';
+  document.getElementById('f-date').value=ev?.date||today();
+  document.getElementById('f-time').value=ev?.time||'10:00';
+  document.getElementById('f-notes').value=ev?.notes||'';
+  document.getElementById('f-recurring').value=ev?.recurring||'';
+  document.getElementById('modal-del-btn').style.display=editingId?'block':'none';
+  renderCatOpts();renderOwnerOpts();renderPriorityOpts();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');editingId=null;}
+function renderCatOpts(){
+  document.getElementById('f-cats').innerHTML=CATS.map(c=>`
+    <button class="cat-opt" onclick="formCat='${c.id}';renderCatOpts()" style="border-color:${formCat===c.id?c.color:'var(--border)'};background:${formCat===c.id?c.color+'12':'#fafafa'};color:${formCat===c.id?c.color:'var(--muted)'}">${c.icon} ${c.label}</button>`).join('');
+}
+function renderOwnerOpts(){
+  document.getElementById('f-owners').innerHTML=FOUNDERS.map(f=>`
+    <button class="founder-opt" onclick="toggleFO('${f.id}')" style="border-color:${formOwners.includes(f.id)?f.color:'var(--border)'};background:${formOwners.includes(f.id)?f.color+'12':'#fafafa'};color:${formOwners.includes(f.id)?f.color:'var(--muted)'}">${pip(f.id,15)} ${f.name}</button>`).join('');
+}
+function renderPriorityOpts(){
+  const cols={high:'#C4546A',medium:'#B8975A',low:'#9CA3AF'};
+  document.getElementById('f-priority').innerHTML=['high','medium','low'].map(p=>`
+    <button class="pri-opt" onclick="formPriority='${p}';renderPriorityOpts()" style="border-color:${formPriority===p?cols[p]:'var(--border)'};background:${formPriority===p?cols[p]+'12':'#fafafa'};color:${formPriority===p?cols[p]:'var(--muted)'}">${p}</button>`).join('');
+}
+function toggleFO(id){
+  formOwners=formOwners.includes(id)?formOwners.filter(o=>o!==id):[...formOwners,id];
+  renderOwnerOpts();
+}
+function saveEvent(){
+  const title=document.getElementById('f-title').value.trim();
+  if(!title)return;
+  const ev={
+    id:editingId||('e'+Date.now()),
+    title,date:document.getElementById('f-date').value,
+    time:document.getElementById('f-time').value,
+    category:formCat,owners:[...formOwners],
+    priority:formPriority,notes:document.getElementById('f-notes').value,
+    recurring:document.getElementById('f-recurring').value||null,
+  };
+  if(editingId)events=events.map(e=>e.id===editingId?ev:e);
+  else events.push(ev);
+  save();closeModal();render();
+}
+function deleteEvent(){
+  if(!editingId)return;events=events.filter(e=>e.id!==editingId);
+  save();closeModal();render();
+}
+
+// ── Templates ─────────────────────────────────────────────────────────────────
+function openTmpl(){
+  const base=nextMonday();
+  document.getElementById('tmpl-list').innerHTML=TEMPLATES.map(t=>`
+    <div class="tmpl-card">
+      <div class="tmpl-name">${t.label}</div>
+      <div class="tmpl-desc">${t.desc}</div>
+      ${t.events.map(e=>`<div class="tmpl-ev"><span style="width:6px;height:6px;border-radius:50%;background:${catById(e.category).color};display:inline-block;flex-shrink:0"></span>${e.title}</div>`).join('')}
+      <button class="tmpl-apply" onclick="applyTemplate('${t.id}')">Apply from ${base}</button>
+    </div>`).join('');
+  document.getElementById('tmpl-overlay').classList.add('open');
+}
+function closeTmpl(){document.getElementById('tmpl-overlay').classList.remove('open');}
+function applyTemplate(id){
+  const t=TEMPLATES.find(x=>x.id===id);if(!t)return;
+  const base=nextMonday();
+  t.events.forEach((e,i)=>{
+    events.push({...e,id:'t'+Date.now()+i,date:addDays(base,e.dayOffset||0),priority:'medium',recurring:e.recurring||null});
+  });
+  save();closeTmpl();render();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+load();
+render();
+loadInsight();
+// Auto-load reminders after a moment
+setTimeout(()=>{if(currentPanel==='remind')loadReminders();},500);
+</script>
+</body>
+</html>
